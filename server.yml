@@ -3,7 +3,7 @@
   hosts: stage
   become: yes
   vars:
-    homedir: /home
+    appdir: /home/samplejavacode
 
   tasks:
     - name: Ensure Maven is present
@@ -17,11 +17,11 @@
     - name: Clone Repo
       git:
        repo: 'https://github.com/Vikas-tm/samplejavacode.git'
-       dest: "{{ homedir }}"
+       dest: "{{ appdir }}"
        clone: yes
 # нужно выполнить mvn package  
     - name: Build sample app
-      shell: mvn package chdir="{{ homedir }}/samplejavacode"
+      shell: mvn package chdir="{{ appdir }}"
 # Копирование на web через делегирование stage
 #    - name: Copy File War
 #      fetch:
