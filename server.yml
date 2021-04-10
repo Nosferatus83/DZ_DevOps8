@@ -21,13 +21,7 @@
        clone: yes
 # нужно выполнить mvn package  
     - name: Build sample app
-      shell: mvn package chdir="{{ appdir }}"
-# Копирование на web через делегирование stage
-#    - name: Copy File War
-#      fetch:
-#       src: /home/samplejavacode/target/addressbook.war
-#       dest: /home
-       
+      shell: mvn package chdir="{{ appdir }}"      
     
 - name: install TomCat+deploy WAR
   hosts: web
@@ -38,12 +32,30 @@
     apt:
      name: tomcat9
      state: present
-  - name: Copy File War
-    copy:
-     src: /home/samplejavacode/target/addressbook.war
-     dest: /var/lib/tomcat9/webapps
-     delegate_to: stage
+#  - name: Copy File War from Stage to Web (synchronize)
+#    synchronize:
+#     src: /home/samplejavacode/target/addressbook.war
+#     dest: /var/lib/tomcat9/webapps/addressbook.war
+#     delegate_to: stage
   - name: Ensure TomCat service is started
     service:
      name: tomcat
      state: started
+
+- name: Copy File War from stage to web
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Fetch the file from the Stage to local
+    run_once: yes
+    fetch:
+       src: /home/samplejavacode/target/addressbook.war
+       dest: /home
+       flat: yes
+    when: ansible_hostname == "stage"
+  - name: Copy the file from the local to web
+    copy:
+      src: /home/addressbook.war
+      dest: /var/lib/tomcat9/webapps
+    when: ansible_hostname == "web"
