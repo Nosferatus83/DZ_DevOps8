@@ -2,6 +2,8 @@
 - name: Build WAR file
   hosts: stage
   become: yes
+  vars:
+    homedir: /home
 
   tasks:
     - name: Ensure Maven is present
@@ -15,9 +17,17 @@
     - name: Clone Repo
       git:
        repo: 'https://github.com/Vikas-tm/samplejavacode.git'
-       dest: /home
+       dest: "{{ homedir }}"
        clone: yes
-# нужно выполнить mvn package     
+# нужно выполнить mvn package  
+    - name: Build sample app
+      shell: mvn package chdir="{{ homedir }}/samplejavacode"
+# Копирование на web через делегирование stage
+#    - name: Copy File War
+#      fetch:
+#       src: /home/samplejavacode/target/addressbook.war
+#       dest: /home
+       
     
 - name: install TomCat+deploy WAR
   hosts: web
@@ -26,14 +36,13 @@
   tasks:
   - name: Ensure TomCat package is present
     apt:
-     name: tomcat
+     name: tomcat9
      state: present
-# нужно скопировать файл 
-  - name: Ensure copy WAR
+  - name: Copy File War
     copy:
-     src: index.html
-     dest: /var/www/html
-
+     src: /home/samplejavacode/target/addressbook.war
+     dest: /var/lib/tomcat9/webapps
+     delegate_to: stage
   - name: Ensure TomCat service is started
     service:
      name: tomcat
