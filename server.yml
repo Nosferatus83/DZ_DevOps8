@@ -53,9 +53,9 @@
        src: /home/samplejavacode/target/addressbook.war
        dest: /home
        flat: yes
-    when: ansible_hostname == "stage"
+    when: "{{ ansible_hostname == 'stage' }}"
   - name: Copy the file from the local to web
     copy:
       src: /home/addressbook.war
       dest: /var/lib/tomcat9/webapps
-    when: ansible_hostname == "web"
+    when: "{{ ansible_hostname == 'web' }}"
