@@ -21,7 +21,12 @@
        clone: yes
 # нужно выполнить mvn package  
     - name: Build sample app
-      shell: mvn package chdir="{{ appdir }}"      
+      shell: mvn package chdir="{{ appdir }}"
+    - name: Copy File War from Stage to MASTER
+      fetch:
+       src: /home/samplejavacode/target/addressbook.war
+       dest: /home
+       flat: yes      
     
 - name: install TomCat+deploy WAR
   hosts: web
@@ -37,25 +42,30 @@
 #     src: /home/samplejavacode/target/addressbook.war
 #     dest: /var/lib/tomcat9/webapps/addressbook.war
 #     delegate_to: stage
+
+  - name: Copy the file from the local to web
+    copy:
+     src: /home/addressbook.war
+     dest: /var/lib/tomcat9/webapps
+
   - name: Ensure TomCat service is started
     service:
      name: tomcat9.service
      state: started
 
-- name: Copy File War from stage to web
-  hosts: all
-  become: yes
-
-  tasks:
-  - name: Fetch the file from the Stage to local
-    run_once: yes
-    fetch:
-       src: /home/samplejavacode/target/addressbook.war
-       dest: /home
-       flat: yes
-    when: "{{ ansible_hostname == 'stage' }}"
-  - name: Copy the file from the local to web
-    copy:
-      src: /home/addressbook.war
-      dest: /var/lib/tomcat9/webapps
-    when: "{{ ansible_hostname == 'web' }}"
+#- name: Copy File War from stage to web
+#  hosts: all
+#  become: yes
+#  tasks:
+#  - name: Fetch the file from the Stage to local
+#    run_once: yes
+#    fetch:
+#       src: /home/samplejavacode/target/addressbook.war
+#       dest: /home
+#       flat: yes
+#    when: "{{ ansible_hostname == 'stage' }}"
+#  - name: Copy the file from the local to web
+#    copy:
+#      src: /home/addressbook.war
+#      dest: /var/lib/tomcat9/webapps
+#    when: "{{ ansible_hostname == 'web' }}"
