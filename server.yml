@@ -40,8 +40,8 @@
 #  - name: Copy File War from Stage to Web (synchronize)
 #    synchronize:
 #     src: /home/samplejavacode/target/addressbook.war
-#     dest: /var/lib/tomcat9/webapps/addressbook.war
-#     delegate_to: stage
+#     dest: /var/lib/tomcat9/webapps
+#    delegate_to: stage
 
   - name: Copy the file from the local to web
     copy:

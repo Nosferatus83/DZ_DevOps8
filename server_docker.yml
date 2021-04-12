@@ -1,0 +1,63 @@
+---
+- name: Install docker 
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure docker is install
+      apt: 
+        name: docker.io
+        state: present
+
+- name: Build and push docker image
+  hosts: build_host
+  become: yes
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Ensure git is install
+      apt: 
+        name: git
+        state: present 
+
+    - name: Ensure Github-repo is clone  
+      git:
+        repo: https://github.com/BakirovaAsia/Homework7.git
+        dest: /home/admin/Homework7
+        clone: yes
+
+    - name: Ensure in DockerHub is login
+      docker_login:
+        username: "{{ DockerHub_user }}"
+        password: "{{ DockerHub_pass }}"
+
+    - name: Ensure Docker image is build
+      docker_image:
+        name: bakirovaasia/caucuscalculator
+        build:
+          path: /home/admin/Homework7/multistage
+        tag: latest
+        push: yes
+        source: build
+
+    - name: Log out of DockerHub
+      docker_login:
+        state: absent
+    
+- name: Pull and deploy app
+  hosts: prod_host
+  become: yes
+
+  tasks:
+    - name: Ensure an image is pull
+      docker_image:
+        name: bakirovaasia/caucuscalculator:latest
+        source: pull
+
+    - name: Ensure a container is start
+      docker_container:
+        name: CaucusCalculator
+        image: bakirovaasia/caucuscalculator:latest
+        state: started
+        ports:
+          - "8080:8080"
