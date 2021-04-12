@@ -25,7 +25,7 @@
     - name: Copy File War from Stage to MASTER
       fetch:
        src: /home/samplejavacode/target/addressbook.war
-       dest: /home
+       dest: /home/
        flat: yes      
     
 - name: install TomCat+deploy WAR
